@@ -1,0 +1,101 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"  
+                xmlns:h="http://java.sun.com/jsf/html"  
+                xmlns:f="http://java.sun.com/jsf/core"  
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" template="/templates/default/main.xhtml">
+    <ui:define name="leftmenu">
+        <li><h:link value="Основной интерфейс" outcome="clientInterface"/></li>
+        <li><h:link value="Общее количество заявок:#{clientBean.req_num}" /></li>
+    </ui:define>
+    <ui:define name="headerBar">
+        <li><p:commandLink><h:outputText value="Клиент #{clientBean.user.user}" /></p:commandLink></li>
+        <li><p:commandLink value="Выход" action="#{login.logout()}"/></li>
+    </ui:define>
+    <ui:define name="content"> 
+        <h:form id="form">
+            <p:commandLink title="View" oncomplete="PF('ovPaddReq').show()" update="panelAdReqForm">
+                <h:outputText value="Добавить заявку" /> 
+            </p:commandLink>
+            <div class="table-responsive table thead-dark table-striped" >
+                <p:dataTable  id="req_table" value="#{clientBean.getMyRequestList()}" var="req" 
+                              draggableColumns="true"  resizableColumns="true" reflow="true"
+                              emptyMessage="Данные не загружены или отсутствуют" paginator="true" rows="15"
+                              style="font-size: 12px">                    
+                    <p:column sortBy="#{req.request_key}" headerText="#" style="width:30px;text-align: center;white-space: normal;" >
+                        <h:outputText value="#{req.request_key}" />
+                    </p:column>
+                    <p:column sortBy="#{req.status_name}" headerText="Статус" style="text-align: center;white-space: normal">
+                        <h:outputText value="#{req.status_name}" />
+                    </p:column>
+                    <p:column headerText="Неисправность" style="text-align:center;white-space: normal" >
+                        <h:outputText value="#{req.faulty_name}" />
+                    </p:column>
+                    <p:column headerText="Приоритет" style="text-align:center;white-space: normal">
+                        <h:outputText value="#{req.priority_name}" />
+                    </p:column>
+                    <p:column sortBy="#{req.opening_time}" headerText="Время октрытия" style="text-align: left;white-space: normal">
+                        <h:outputText value="#{req.opening_time}" />
+                    </p:column>
+                    <p:column style="text-align: center;">
+                        <p:commandButton id="shwPanCom" action="#{clientBean.overlayPanelComInit(req.request_key)}" 
+                                         icon="pi pi-comments" update="panelComForm" oncomplete="PF('ovPcomm').show('#{component.clientId}')" />
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+
+        <p:overlayPanel widgetVar="ovPaddReq" dynamic="true" showCloseIcon="true">
+            <h:form id="panelAdReqForm">
+                <p:panelGrid columns="2" layout="grid" id="pnl">
+                    <h:outputText value="Приоритет" /> 
+                    <p:selectOneMenu id="k" value="#{clientBean.selected_prkey}" effect="fold" style="width:150px;">
+                        <f:selectItem itemValue="" itemLabel="Выберите один" />
+                        <f:selectItems value="#{clientBean.priorityList}" var="prf" itemValue="#{prf.priority_key}" itemLabel="#{prf.priority_name}"  />
+                    </p:selectOneMenu>  
+                    <h:outputText value="ФИО" /> 
+                    <p:inputText id="fio" label="ФИО" required="true"
+                                 value="#{requests.FIO}"/>
+                    <h:outputText value="Номер телефона" />
+                    <p:inputText id="tel_num" label="Номер телефона" required="true"
+                                 value="#{requests.telephone_num}"/>
+                    <h:outputText value="Тип поломки" /> 
+                    <p:selectOneMenu id="key" value="#{clientBean.selected_fltkey}" effect="fold" style="width:150px;">
+                        <f:selectItem itemValue="#{null}" itemLabel="Выберите один" />
+                        <f:selectItems value="#{clientBean.faultyList}" var="perf" itemValue="#{perf.faulty_key}" itemLabel="#{perf.faulty_name}"  />
+                    </p:selectOneMenu>  
+                    <p:commandButton id="sendit" value="Отправить" 
+                                     action="#{clientBean.addReq(requests)}" oncomplete="PF('ovPaddReq').hide()" update=":form:req_table" />
+                    <h:panelGroup/>
+                </p:panelGrid>
+            </h:form>
+        </p:overlayPanel>
+
+        <p:overlayPanel widgetVar="ovPcomm" id="panCom" dynamic="true" >
+            <h:form id="panelComForm">
+                <p:inputText id="text" label="Текст..." required="true"
+                             value="#{comment.comment_text}"/>
+                <p:commandButton id="sendMsg" value="Отправить" update=":panelComForm:tableComm"
+                                 action="#{clientBean.sendComment(comment)}"
+                                 >
+                </p:commandButton>
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable id="tableComm"  value="#{clientBean.commentList}" style="width:400px"  var="com"
+                                 emptyMessage="Данные не загружены или отсутствуют" paginator="true" rows="5">
+                        <p:column headerText="Время">
+                            <h:outputText value="#{com.comment_time}" />
+                        </p:column>
+                        <p:column headerText="Текст">
+                            <h:outputText value="#{com.comment_text}" />
+                        </p:column>
+                        <p:column headerText="Автор">
+                            <h:outputText value="#{com.comment_author}" />
+                        </p:column>                            
+                    </p:dataTable>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+
+
+    </ui:define>
+
+</ui:composition>    

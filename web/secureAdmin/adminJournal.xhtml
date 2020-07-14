@@ -1,0 +1,45 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"  
+                xmlns:h="http://java.sun.com/jsf/html"  
+                xmlns:f="http://java.sun.com/jsf/core"  
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" template="/templates/default/main.xhtml">
+    <ui:define name="leftmenu">
+        <li><h:link value="Основной интерфейс" outcome="adminInterface"/></li>
+        <li ><h:link value="Редактировать справочники" outcome="addProp"/></li>
+        <li class="active"><h:link value="Отчет по журналу заявок" outcome="adminJournal"/></li>
+        <li><h:link value="Отчет по потраченным ресурсам" outcome="adminConsum"/></li>
+    </ui:define>
+    <ui:define name="headerBar">
+        <li><p:commandLink><h:outputText value="Администратор #{adminBean.user.user}" /></p:commandLink></li>
+        <li><p:commandLink value="Выход" action="#{login.logout()}"/></li>
+    </ui:define>
+    <ui:define name="content"> 
+        <h:form id="main">
+            <p:outputLabel for="range" value="Временной период:" />
+            <p:datePicker id="range" selectionMode="range" value="#{journalBean.range}" readonlyInput="true" pattern="MM/dd/yy"  showIcon="true" />
+            <p:commandButton id="shwSortTable" action="#{journalBean.journalViewInitDates()}" 
+                             value="Задать период" update=":main:req_openedtable"/>
+            <p:commandButton id="shwNoSortTable" action="#{journalBean.journalViewInitW()}" 
+                             value="Отобразить все записи" update="req_openedtable"/>
+
+            <p:commandButton value="Скачать отчет" ajax="false" immediate="true">
+                <p:dataExporter type="xlsxstream" target="req_openedtable" fileName="otchet" />
+            </p:commandButton>
+            <div class="table-responsive table thead-dark table-striped" >
+                <p:dataTable  widgetVar="req_openedtable" id="req_openedtable" value="#{journalBean.journ}" var="req" 
+                              draggableColumns="true"  resizableColumns="true" reflow="true"
+                              paginator="true" rows="10" emptyMessage="Данные не загружены или отсутствуют">    
+                    <p:column headerText="Дата" style="text-align: center;white-space: normal">
+                        <h:outputText value="#{req.date}" />                     
+                    </p:column>
+                    <p:column headerText="Описание" style="text-align: center;white-space: normal">
+                        <h:outputText value="#{req.cause}" />                     
+                    </p:column>
+                    <p:column headerText="Заявка" style="text-align: center;white-space: normal">
+                        <h:outputText value="#{req.request_key}" />                     
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>    

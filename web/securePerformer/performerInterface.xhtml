@@ -1,0 +1,107 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"  
+                xmlns:h="http://java.sun.com/jsf/html"  
+                xmlns:f="http://java.sun.com/jsf/core"  
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" template="/templates/default/main.xhtml">
+    <ui:define name="leftmenu">
+        <li class="active"><h:link value="Основной интерфейс" outcome="performerInterface"/></li>
+        <li><h:link value="Общее количество заявок:#{performerBean.req_num}" /></li>
+    </ui:define>
+    <ui:define name="headerBar">
+        <li><p:commandLink><h:outputText value="Исполинтель #{performerBean.perf.perf_name}" /></p:commandLink></li>
+        <li><p:commandLink value="Выход" action="#{login.logout()}"/></li>
+    </ui:define>
+    <ui:define name="content"> 
+        <h:form id="form">
+            <p:dataTable  id="req_table" value="#{performerBean.requestList()}" var="req" style="font-size: 12px"
+                          draggableColumns="true"  resizableColumns="true" reflow="true"
+                          emptyMessage="Данные не загружены или отсутствуют" paginator="true" rows="15">                    
+                <p:column headerText="#" style="width:20px;text-align: center;">
+                    <h:outputText value="#{req.request_key}" />
+                </p:column>
+                <p:column headerText="Статус" style="text-align: center; width:100px">
+                    <h:outputText value="#{req.status_name}" />
+                </p:column>
+                <p:column headerText="Неисправность" style="text-align:center;white-space: normal" >
+                    <h:outputText value="#{req.faulty_name}" />
+                </p:column>
+                <p:column headerText="Приоритет" style="text-align:center;white-space: normal">
+                    <h:outputText value="#{req.priority_name}" />
+                </p:column>
+                <p:column headerText="ФИО" style="text-align: center;white-space: normal">
+                    <h:outputText value="#{req.FIO}"/>
+                </p:column>
+                <p:column headerText="Номер телефона" style="text-align: center;white-space: normal">
+                    <h:outputText value="#{req.telephone_num}" />
+                </p:column>
+                <p:column headerText="Время октрытия" style="text-align: left;white-space: normal">
+                    <h:outputText value="#{req.opening_time}" />
+                </p:column>
+                <p:column style="text-align: left;">
+                    <p:commandButton action="#{performerBean.closeReq(req.request_key)}" 
+                                     icon="pi pi-times" title="View" update="req_table"/>
+                    <p:commandButton id="shwPanCom" action="#{performerBean.overlayPanelComInit(req.request_key)}" 
+                                     icon="pi pi-comments" update="panelComForm" oncomplete="PF('ovPcomm').show('#{component.clientId}')" />
+                    <p:commandButton id="shwPanCons" action="#{performerBean.overlayPanelConsInit(req.request_key)}" 
+                                     icon="pi pi-plus" update="panelConsForm" oncomplete="PF('ovPcons').show('#{component.clientId}')" />
+                </p:column>
+
+            </p:dataTable>
+        </h:form>
+        <p:overlayPanel widgetVar="ovPcons" id="panCons" dynamic="true">
+            <h:form id="panelConsForm">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <div class="ui-inputgroup">
+                            <p:commandButton id="sendit" value="Отправить" update="panelConsForm" 
+                                             action="#{performerBean.addConsumable(consumables)}"/>
+                            <p:selectOneMenu id="key" value="#{consumables.material_key}" effect="fold" > 
+                                <f:selectItems value="#{performerBean.suppliesList}" var="pr" itemLabel="#{pr.material_name}" itemValue="#{pr.material_key}" />
+                            </p:selectOneMenu>
+                            <p:spinner id="basic" value="#{consumables.quantity}" style="width:100px" />
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable id="tableCons"  value="#{performerBean.consumablesList}" style="width:400px"  var="com"
+                                 emptyMessage="Данные не загружены или отсутствуют" paginator="true" rows="7">
+                        <p:column headerText="Название">
+                            <f:facet name="header">
+                                Израсходованные расходнгые материалы
+                            </f:facet>
+                            <h:outputText value="#{com.material}" />
+                        </p:column>
+                        <p:column headerText="Количество">
+                            <h:outputText value="#{com.quantity}" />
+                        </p:column> 
+                    </p:dataTable>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+        <p:overlayPanel widgetVar="ovPcomm" id="panCom" dynamic="true" >
+            <h:form id="panelComForm">
+                <p:inputText id="text" label="Текст..." required="true"
+                             value="#{comment.comment_text}"/>
+                <p:commandButton id="sendMsg" value="Отправить" update="panelComForm"
+                                 action="#{performerBean.sendComment(comment)}"
+                                 >
+                </p:commandButton>
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable id="tableComm"  value="#{performerBean.commentList}" style="width:400px"  var="com"
+                                 emptyMessage="Данные не загружены или отсутствуют" paginator="true" rows="7">
+                        <p:column headerText="Время">
+                            <h:outputText value="#{com.comment_time}" />
+                        </p:column>
+                        <p:column headerText="Текст">
+                            <h:outputText value="#{com.comment_text}" />
+                        </p:column>
+                        <p:column headerText="Автор">
+                            <h:outputText value="#{com.comment_author}" />
+                        </p:column>                            
+                    </p:dataTable>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+
+    </ui:define>    
+</ui:composition>    

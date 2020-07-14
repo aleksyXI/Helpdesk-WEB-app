@@ -1,0 +1,155 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"  
+                xmlns:h="http://java.sun.com/jsf/html"  
+                xmlns:f="http://java.sun.com/jsf/core"  
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" template="/templates/default/main.xhtml">
+    <ui:define name="leftmenu">
+        <li><h:link value="Основной интерфейс" outcome="adminInterface"/></li>
+        <li class="active"><h:link value="Редактировать справочники" outcome="addProp"/></li>
+        <li><h:link value="Журнал заявок" outcome="adminJournal"/></li>
+         <li><h:link value="Отчет по потраченным ресурсам" outcome="adminConsum"/></li>
+    </ui:define>
+    <ui:define name="headerBar">
+        <li><p:commandLink><h:outputText value="Администратор #{adminBean.user.user}" /></p:commandLink></li>
+        <li><p:commandLink value="Выход" action="#{login.logout()}"/></li>
+    </ui:define>
+    <ui:define name="content"> 
+        <p:messages id="messages"/>
+        <h:form>
+            <p:commandButton id="shwStatCom" action="#{propBean.overlayPanelStatInit()}"  style="margin:10px"
+                             value="Редактировать справочник статусов" update="ovPstat" oncomplete="PF('ovPstat').show()" />
+            <p:commandButton id="shwFaultCom" action="#{propBean.overlayPanelFaultInit()}" style="margin:10px"
+                             value="Редактировать справочник неисправностей" update="ovPfault" oncomplete="PF('ovPfault').show()" />
+            <p:commandButton id="shwSupplCom" action="#{propBean.overlayPanelSupplInit()}" style="margin:10px"
+                             value="Редактировать справочник запчастей" update="ovPstat" oncomplete="PF('ovPsuppl').show('')" />
+        </h:form>
+        <p:overlayPanel widgetVar="ovPstat" dynamic="true" showCloseIcon="true" >
+            <h:form id="ovPstat">
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable  id="req_table" value="#{propBean.statusList}" var="stat" 
+                                  draggableColumns="true"  resizableColumns="true" reflow="true" rows="8" 
+                                  paginator="true" editable="true" style="width:300px; font-size: small"
+                                  emptyMessage="Данные не загружены"> 
+                        <p:ajax event="rowEdit" listener="#{propBean.onRowStatEdit}" update="req_table" />
+                        <p:ajax event="rowEditCancel" listener="#{propBean.onRowCancel}" update="req_table" />
+                        <p:column headerText="Код" style="width:30px;text-align: center;" >
+                            <h:outputText value="#{stat.status_key}" />
+                        </p:column>
+                        <p:column headerText="Название" style="width:100px">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{stat.status_name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{stat.status_name}" style="width:100%" label="Название"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width:20px">
+                            <p:rowEditor />
+                        </p:column>
+                        <p:column style="width:35px">
+                            <p:commandButton id="delStat" immediate="true" icon="pi pi-trash" action="#{propBean.deleteStatRecordInDB(stat.status_key)}" update="req_table"/>  
+                        </p:column>
+                    </p:dataTable>
+                </div>
+                <div class="ui-g ui-fluid">
+                    <div class="ui-g-48 ui-md-16">
+                        <div class="ui-inputgroup">
+                            <p:inputText id="stName" label="Название" required="true" value="#{status.status_name}"/>
+                            <p:commandButton id="edStat" icon="pi pi-plus" action="#{propBean.addStat(status)}" update="req_table"/>   
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+
+        <p:overlayPanel widgetVar="ovPfault" dynamic="true" showCloseIcon="true">
+            <h:form id="ovPfault">
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable  id="re_table" value="#{propBean.faultyList}" var="fault" 
+                                  draggableColumns="true"  resizableColumns="true" reflow="true" rows="8" 
+                                  paginator="true" editable="true" style="width:400px"
+                                  emptyMessage="Данные не загружены"> 
+                        <p:ajax event="rowEdit" listener="#{propBean.onRowStatEdit}" update="re_table" />
+                        <p:ajax event="rowEditCancel" listener="#{propBean.onRowCancel}" update="re_table" />
+                        <p:column headerText="Код" style="width:30px;text-align: center;" >
+                            <h:outputText value="#{fault.faulty_key}" />
+                        </p:column>
+                        <p:column headerText="Название">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{fault.faulty_name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{fault.faulty_name}" style="width:100%" label="Название"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Описание">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{fault.faulty_description}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{fault.faulty_description}" style="width:100%" label="Название"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width:20px">
+                            <p:rowEditor />  
+                        </p:column>
+                        <p:column style="width:30px">
+                            <p:commandButton id="delFault" immediate="true" icon="pi pi-trash" action="#{propBean.deleteFaultRecordInDB(fault.faulty_key)}" update="re_table"/>  
+                        </p:column>
+                    </p:dataTable>
+                </div>
+                <div class="ui-g ui-fluid">
+                    <div class="ui-g-48 ui-md-16">
+                        <div class="ui-inputgroup">
+                            <p:inputText id="stName" label="Название" required="true" value="#{faulty.faulty_name}"/>
+                            <p:commandButton id="edFault" icon="pi pi-plus" action="#{propBean.addFault(faulty)}" update="re_table"/>   
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+
+        <p:overlayPanel widgetVar="ovPsuppl" dynamic="true" showCloseIcon="true">
+            <h:form id="ovPsuppl">
+                <div class="table-responsive table thead-dark table-striped" >
+                    <p:dataTable  id="re_table" value="#{propBean.suppliesList}" var="sup" 
+                                  draggableColumns="true"  resizableColumns="true" reflow="true" rows="8" 
+                                  paginator="true" editable="true" style="width:600px"
+                                  emptyMessage="Данные не загружены"> 
+                        <p:ajax event="rowEdit" listener="#{propBean.onRowStatEdit}" update="re_table" />
+                        <p:ajax event="rowEditCancel" listener="#{propBean.onRowCancel}" update="re_table" />
+                        <p:column headerText="Код" style="width:30px;text-align: center;" >
+                            <h:outputText value="#{sup.material_key}" />
+                        </p:column>
+                        <p:column headerText="Название">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{sup.material_name}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{sup.material_name}" style="width:100%" label="Название"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Ед.измерения">
+                            <p:cellEditor>
+                                <f:facet name="output"><h:outputText value="#{sup.measure_type}" /></f:facet>
+                                <f:facet name="input"><p:inputText value="#{sup.measure_type}" style="width:100%" label="Название"/></f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width:20px">
+                            <p:rowEditor />  
+                        </p:column>
+                        <p:column style="width:30px">
+                            <p:commandButton id="delSupl" immediate="true" icon="pi pi-trash" action="#{propBean.deleteSupplRecordInDB(sup.material_key)}" update="re_table"/>  
+                        </p:column>
+                    </p:dataTable>
+                </div>
+                <div class="ui-g ui-fluid">
+                    <div class="ui-g-48 ui-md-16">
+                        <div class="ui-inputgroup">
+                            <p:inputText id="stName" label="Название" required="true" value="#{supplies.material_name}"/>
+                            <p:selectOneMenu id="mes_type" value="#{supplies.measure_type}"  effect="fold" editable="true">
+                                <f:selectItem itemLabel="Select One" itemValue="" />
+                                <f:selectItem itemLabel="Метры" itemValue="м." />
+                                <f:selectItem itemLabel="Единиц" itemValue="ед." />
+                                <f:selectItem itemLabel="Грамм" itemValue="г." />
+                            </p:selectOneMenu>
+                            <p:commandButton id="edFault" icon="pi pi-plus" action="#{propBean.addSuppl(supplies)}" update="re_table"/>   
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:overlayPanel>
+    </ui:define>
+</ui:composition>    
